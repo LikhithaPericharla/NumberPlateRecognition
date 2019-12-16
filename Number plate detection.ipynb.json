@@ -1,0 +1,154 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import requests\n",
+    "import json\n",
+    "import base64\n",
+    "import cv2\n",
+    "from requests.auth import HTTPBasicAuth\n",
+    "from requests_toolbelt.multipart.encoder import MultipartEncoder\n",
+    "filename=\"car.jpg\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "API_ENDPOINT = \"https://gateway.watsonplatform.net/visual-recognition/api/v4/analyze?version=2019-02-11\"\n",
+    "m = MultipartEncoder(\n",
+    "    fields={\"features\": \"objects\",\"collection_ids\":\"eeacfa1e-d329-4a1d-a5dc-0d35c4fa049f\",\n",
+    "            'images_file':(filename,open(filename,'rb'))}\n",
+    "    )\n",
+    "headers={'Content-Type':m.content_type}\n",
+    "\n",
+    "r = requests.post(url=API_ENDPOINT,headers=headers, auth=HTTPBasicAuth(\"apikey\",\"H7ROt0rd1FNboTHCgbVqyahjYnaTExF7Y9_GoK1odGGD\"),data=m)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "{'images': [{'source': {'type': 'file', 'filename': 'car.jpg'}, 'dimensions': {'height': 510, 'width': 827}, 'objects': {'collections': [{'collection_id': 'eeacfa1e-d329-4a1d-a5dc-0d35c4fa049f', 'objects': [{'object': 'car', 'location': {'left': 304, 'top': 298, 'width': 288, 'height': 84}, 'score': 0.95064193}]}]}}]}\n"
+     ]
+    }
+   ],
+   "source": [
+    "pastebin_url = r.text\n",
+    "data= json.loads(pastebin_url)\n",
+    "frame=cv2.imread(filename)\n",
+    "frame1=cv2.imread(filename)\n",
+    "print(data)\n",
+    "d=data[\"images\"][0][\"objects\"][\"collections\"][0][\"objects\"]\n",
+    "count=len(d)\n",
+    "cv2.putText(frame, \"Count:\"+str(count), (350, 30),\n",
+    "cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)\n",
+    "for i in d:\n",
+    "    label=i[\"object\"]\n",
+    "    x=i[\"location\"][\"left\"]\n",
+    "    y=i[\"location\"][\"top\"]\n",
+    "    w=i[\"location\"][\"width\"]\n",
+    "    h=i[\"location\"][\"height\"]\n",
+    "    cv2.putText(frame, label, (x, y),cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)\n",
+    "    cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)\n",
+    "    frame = frame[y:y+h, x:x+w]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import numpy\n",
+    "from PIL import Image"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "filename=Image.fromarray(frame)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pytesseract"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import shutil\n",
+    "import os\n",
+    "import random\n",
+    "text = pytesseract.image_to_string(frame)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "“DL7CQ 1939\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(text)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
